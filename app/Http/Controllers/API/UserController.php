@@ -62,12 +62,11 @@ class UserController extends Controller
             }
 
             $user = User::where('email', $request->email)->first();
-
             if (! Hash::check($request->password, $user->password, [])) {
                 throw new \Exception('Invalid Credentials');
             }
 
-            $tokenResult = $user->creteToken('authToken')->plainTextToken;
+            $tokenResult = $user->createToken('authToken')->plainTextToken;
             return ResponseFormatter::success([
                 'access_token' => $tokenResult,
                 'token_type' => 'Bearer',
