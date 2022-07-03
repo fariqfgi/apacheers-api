@@ -23,3 +23,4 @@ Route::post('register', [UserController::class, 'register']);
 Route::post('login', [UserController::class, 'login']);
 Route::get('report', [ReportController::class, 'all']);
 Route::get('report/total', [ReportController::class, 'count']);
+Route::get('report/thisyear', [ReportController::class, 'thisyear']);

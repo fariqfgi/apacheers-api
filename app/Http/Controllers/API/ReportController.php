@@ -6,6 +6,7 @@ use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
 use App\Models\Report;
 use Illuminate\Http\Request;
+use DB;
 
 class ReportController extends Controller
 {
@@ -35,7 +36,7 @@ class ReportController extends Controller
             }
         }
 
-        $data = new Report;
+        $data = Report::orderBy('id', 'desc');
 
         # get by date
         if($date)
@@ -54,5 +55,16 @@ class ReportController extends Controller
     {
         $total = Report::count();
         return response()->json(['total' => $total]);
+    }
+
+    public function thisyear()
+    {   
+
+        $report = Report::select(Report::raw("(count(vulnerability)) as total_report"),
+                            Report::raw("(DATE_FORMAT(datetime, '%b')) as month"))
+                            ->whereYear('datetime', date('Y'))
+                            ->groupBy(Report::raw("DATE_FORMAT(datetime, '%b')"))
+                            ->get();
+        return response()->json(['data' => $report]);
     }
 }
