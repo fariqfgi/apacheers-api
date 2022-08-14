@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\UserCode;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -65,13 +66,18 @@ class UserController extends Controller
             if (! Hash::check($request->password, $user->password, [])) {
                 throw new \Exception('Invalid Credentials');
             }
-
-            $tokenResult = $user->createToken('authToken')->plainTextToken;
+            
+            auth()->user()->generateCode();
             return ResponseFormatter::success([
-                'access_token' => $tokenResult,
-                'token_type' => 'Bearer',
                 'user' => $user
-            ], 'Authenticated');
+            ], 'Success Send Code');
+
+            // $tokenResult = $user->createToken('authToken')->plainTextToken;
+            // return ResponseFormatter::success([
+            //     'access_token' => $tokenResult,
+            //     'token_type' => 'Bearer',
+            //     'user' => $user
+            // ], 'Authenticated');
 
         } catch (Exception $error) {
             return ResponseFormatter::error([
@@ -80,6 +86,43 @@ class UserController extends Controller
             ], 'Authentication Failed', 500);
         }
     }
+
+    public function login2fa(Request $request)
+    {
+        try {
+            $request->validate([
+                'user_id' => 'required',
+                'code' => 'required'
+            ]);
+            
+            $find = UserCode::where('user_id', $request->user_id)
+                    ->where('code', $request->code)
+                    ->where('updated_at', '>=', now()->subMinutes(2))
+                    ->first();
+            
+            if (!is_null($find)) {
+                $user = User::where('id', $request->user_id)->first();
+                $tokenResult = $user->createToken('authToken')->plainTextToken;
+                return ResponseFormatter::success([
+                    'access_token' => $tokenResult,
+                    'token_type' => 'Bearer',
+                    'user' => $user
+                ], 'Authenticated');
+            } else {
+                return ResponseFormatter::error([
+                    'message' => 'Something went wrong',
+                    'error' => $error
+                ], 'Authentication Failed', 500);
+            }
+
+        } catch (Exception $error) {
+            return ResponseFormatter::error([
+                'message' => 'Something went wrong',
+                'error' => $error
+            ], 'Authentication Failed', 500);
+        }
+    }
+
 
     public function logout(Request $request)
     {

@@ -9,6 +9,8 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SendCodeMail;
 
 class User extends Authenticatable
 {
@@ -58,4 +60,28 @@ class User extends Authenticatable
     protected $appends = [
         'profile_photo_url',
     ];
+
+    public function generateCode()
+    {
+        $code = rand(100000, 999999);
+
+        UserCode::updateOrCreate(
+            [ 'user_id' => auth()->id() ],
+            [ 'code' => $code ]
+        );
+
+        try {
+
+            $details = [
+                'title' => 'Mail from Fintrusion',
+                'code' => $code
+            ];
+
+            Mail::to(auth()->user()->email)->send(new SendCodeMail($details));
+
+        } catch (\Exception $e) {
+            info("Error: ". $e->getMessage());
+            dd($e);
+        }
+    }
 }
