@@ -6,6 +6,8 @@ use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
 use App\Models\Report;
 use Illuminate\Http\Request;
+use App\Exports\ReportExport;
+use Maatwebsite\Excel\Facades\Excel;
 use DB;
 
 class ReportController extends Controller
@@ -69,4 +71,21 @@ class ReportController extends Controller
                             ->get();
         return response()->json(['data' => $report]);
     }
+
+    public function export(Request $request)
+	{
+        $afterdate = $request->input('afterdate');
+        $beforedate = $request->input('beforedate');
+
+        if($afterdate && $beforedate)
+        {
+            return Excel::download(new ReportExport($afterdate, $beforedate), 'reports-'.$afterdate.'-to-'.$beforedate.'-'.rand(10,1000).'.xlsx');
+        } else {
+            return Excel::download(new ReportExport("", ""), 'all-reports-'.rand(10,1000).'.xlsx');
+        }
+
+
+
+		
+	}
 }

@@ -25,3 +25,4 @@ Route::post('login2fa', [UserController::class, 'login2fa']);
 Route::get('report', [ReportController::class, 'all']);
 Route::get('report/total', [ReportController::class, 'count']);
 Route::get('report/thisyear', [ReportController::class, 'thisyear']);
+Route::get('report/export', [ReportController::class, 'export']);
