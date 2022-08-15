@@ -14,7 +14,8 @@ class ReportController extends Controller
     {
         $id = $request->input('id');
         $limit = $request->input('limit');
-        $date = $request->input('date');
+        $afterdate = $request->input('afterdate');
+        $beforedate = $request->input('beforedate');
 
         # get by id
         if ($id)
@@ -39,9 +40,10 @@ class ReportController extends Controller
         $data = Report::orderBy('id', 'desc');
 
         # get by date
-        if($date)
+        if($afterdate && $beforedate)
         {
-            $data = $data->whereDate('datetime', '=', $date);
+            $data = $data->whereDate('datetime', '>=', $afterdate)->whereDate('datetime', '<=', $beforedate);
+
         }
 
         return ResponseFormatter::success(
