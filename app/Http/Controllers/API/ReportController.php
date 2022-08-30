@@ -83,9 +83,26 @@ class ReportController extends Controller
         } else {
             return Excel::download(new ReportExport("", ""), 'all-reports-'.rand(10,1000).'.xlsx');
         }
-
-
-
 		
 	}
+
+    public function reportTime(Request $request)
+    {
+        $date = $request->input('date');
+
+        $times = DB::table('reports')
+            ->select(DB::raw('hour(datetime) as hour'), DB::raw('COUNT(id) as count'))
+            ->whereDate('datetime', $date)
+            ->groupBy(DB::raw('hour(datetime)'))
+            ->orderBy('count', 'DESC')
+            ->limit(5)
+            ->get();
+
+        $array = json_decode($times, true);
+        usort($array, function($a, $b) {
+            return $a['hour'] <=> $b['hour'];
+        });
+
+        return response()->json(['data' => $array]);
+    }
 }
